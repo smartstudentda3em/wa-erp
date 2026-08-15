@@ -1,0 +1,106 @@
+name: waerp
+
+# إعدادات مشتركة لكل عمليات Laravel (نفس المفاتيح لكل الخدمات)
+x-app-env: &app-env
+  APP_NAME: "WhatsApp ERP"
+  APP_ENV: local
+  APP_KEY: "base64:Q4h3qQreSUqNfOAoNWGGBPyV0LMNIMDRZXQSwHt0zJY="
+  APP_DEBUG: "true"
+  APP_URL: "http://localhost:8001"
+  LOG_CHANNEL: stack
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: "3306"
+  DB_DATABASE: whatsapp_erp
+  DB_USERNAME: wa_user
+  DB_PASSWORD: wa_password
+  QUEUE_CONNECTION: redis
+  CACHE_STORE: redis
+  REDIS_CLIENT: predis
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  BROADCAST_CONNECTION: reverb
+  REVERB_APP_ID: erp-app
+  REVERB_APP_KEY: erp-key
+  REVERB_APP_SECRET: erp-secret
+  REVERB_HOST: reverb
+  REVERB_PORT: "8080"
+  REVERB_SCHEME: http
+  SESSION_DRIVER: cookie
+  SESSION_DOMAIN: localhost
+  SANCTUM_STATEFUL_DOMAINS: "localhost:8001,127.0.0.1:8001"
+  WHATSAPP_VERIFY_TOKEN: change-me-verify-token
+  WHATSAPP_GRAPH_VERSION: v21.0
+  WHATSAPP_BROADCAST_RATE: "20"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: waerp_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: whatsapp_erp
+      MYSQL_USER: wa_user
+      MYSQL_PASSWORD: wa_password
+      MYSQL_ROOT_PASSWORD: root_secret
+    ports:
+      - "3308:3306"
+    volumes:
+      - wa_dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: waerp_redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+
+  app:
+    build: .
+    image: waerp-app
+    container_name: waerp_app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment: *app-env
+    command: sh -lc "php artisan migrate --force && php artisan db:seed --force; php artisan serve --host=0.0.0.0 --port=8000"
+    ports:
+      - "8001:8000"
+
+  reverb:
+    image: waerp-app
+    container_name: waerp_reverb
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment: *app-env
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8081:8080"
+
+  queue:
+    image: waerp-app
+    container_name: waerp_queue
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment: *app-env
+    command: php artisan queue:work redis --tries=3 --sleep=3
+
+  scheduler:
+    image: waerp-app
+    container_name: waerp_scheduler
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment: *app-env
+    command: php artisan schedule:work
+
+volumes:
+  wa_dbdata:
