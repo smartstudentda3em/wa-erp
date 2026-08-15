@@ -8,23 +8,23 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /** تسجيل الدخول عبر Sanctum SPA (جلسة كوكيز) */
+    /** تسجيل الدخول عبر Sanctum SPA (جلسة كوكيز) — باسم المستخدم = رقم الهاتف */
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'phone'    => ['required', 'string'],
             'password' => ['required'],
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => ['بيانات الدخول غير صحيحة.'],
+                'phone' => ['بيانات الدخول غير صحيحة.'],
             ]);
         }
 
         $request->session()->regenerate();
 
-        return response()->json(['user' => $request->user()->only('id', 'name', 'email')]);
+        return response()->json(['user' => $request->user()->only('id', 'name', 'phone')]);
     }
 
     public function logout(Request $request)
@@ -44,7 +44,7 @@ class AuthController extends Controller
         return response()->json([
             'id'          => $user->id,
             'name'        => $user->name,
-            'email'       => $user->email,
+            'phone'       => $user->phone,
             'roles'       => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
         ]);

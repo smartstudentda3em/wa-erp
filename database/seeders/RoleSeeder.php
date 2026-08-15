@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -36,11 +34,6 @@ class RoleSeeder extends Seeder
         $agent = Role::firstOrCreate(['name' => 'agent', 'guard_name' => 'web']);
         $agent->syncPermissions([]); // موظف: يرى المسندة إليه فقط، بلا تحويل
 
-        // ===== مستخدم إداري افتراضي =====
-        $adminUser = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            ['name' => 'المدير', 'password' => Hash::make('password'), 'is_active' => true]
-        );
-        $adminUser->assignRole('admin');
+        // ملاحظة: إنشاء المستخدم الإداري صار في UserSeeder (يُستدعى بعد هذا الـ Seeder).
     }
 }

@@ -6,7 +6,7 @@ import { useAuthStore } from '../stores/authStore';
 export default function LoginPage() {
   const navigate = useNavigate();
   const loadMe = useAuthStore((s) => s.loadMe);
-  const [form, setForm] = useState({ email: '', password: '', remember: true });
+  const [form, setForm] = useState({ phone: '', password: '', remember: true });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,11 +37,13 @@ export default function LoginPage() {
         {error && <div className="bg-red-50 text-red-600 text-sm rounded-lg p-2">{error}</div>}
 
         <div>
-          <label className="block text-sm font-medium mb-1">البريد الإلكتروني</label>
+          <label className="block text-sm font-medium mb-1">رقم الهاتف</label>
           <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            type="tel"
+            inputMode="numeric"
+            autoComplete="username"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
             className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
             required
           />
