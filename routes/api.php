@@ -23,6 +23,13 @@ Route::prefix('webhooks/whatsapp')->group(function () {
          ->middleware('whatsapp.signature');
 });
 
+// راوت مختصر مكافئ: /api/webhook (نفس منطق التحقق/الاستقبال)
+Route::prefix('webhook')->group(function () {
+    Route::get('/', [WhatsAppWebhookController::class, 'verify']);
+    Route::post('/', [WhatsAppWebhookController::class, 'handle'])
+         ->middleware('whatsapp.signature');
+});
+
 /*
 |--------------------------------------------------------------------------
 | المصادقة (Sanctum SPA)
