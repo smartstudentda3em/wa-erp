@@ -37,7 +37,7 @@ return [
 
     'whatsapp' => [
         'app_secret'     => env('WHATSAPP_APP_SECRET'),
-        'verify_token'   => env('WHATSAPP_VERIFY_TOKEN'),
+        'verify_token'   => env('WHATSAPP_VERIFY_TOKEN') ?: '0145', // 0145 افتراضياً (يعمل حتى لو كان .env فارغاً)؛ يتجاوزه .env عند ضبطه بقيمة غير فارغة
         'graph_version'  => env('WHATSAPP_GRAPH_VERSION', 'v21.0'),
         'broadcast_rate' => (int) env('WHATSAPP_BROADCAST_RATE', 20),
         'graph_base'     => 'https://graph.facebook.com',
