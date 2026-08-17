@@ -10,6 +10,7 @@ return new class extends Migration {
         Schema::table('users', function (Blueprint $table) {
             // تسجيل الدخول صار برقم الهاتف فقط — إزالة الاعتماد على البريد نهائيًا
             if (Schema::hasColumn('users', 'email')) {
+                $table->dropUnique('users_email_unique');
                 $table->dropColumn('email');
             }
             if (Schema::hasColumn('users', 'email_verified_at')) {
