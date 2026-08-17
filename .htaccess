@@ -1,0 +1,7 @@
+# خدمة تطبيق Laravel من جذر النطاق عندما يكون Document Root = جذر المشروع.
+# يوجّه كل الطلبات داخل مجلد public/ (حيث front controller: index.php)،
+# فتعمل الروابط الجذرية مثل /  و /api/...  و /api/webhook دون بادئة /public.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
