@@ -30,18 +30,6 @@ Route::prefix('webhook')->group(function () {
          ->middleware('whatsapp.signature');
 });
 
-// تشخيص مؤقت (بلا جلسة): يكشف حالة الإعدادات على الخادم.
-Route::get('/diag', function () {
-    return response()->json([
-        'app_key_len'    => strlen((string) config('app.key')),
-        'app_env'        => config('app.env'),
-        'app_debug'      => config('app.debug'),
-        'session_driver' => config('session.driver'),
-        'cache_default'  => config('cache.default'),
-        'db_connection'  => config('database.default'),
-    ]);
-});
-
 /*
 |--------------------------------------------------------------------------
 | المصادقة (Sanctum SPA)
