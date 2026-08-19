@@ -2,7 +2,7 @@
 
 return [
 
-    'default' => env('BROADCAST_CONNECTION', 'null'),
+    'default' => 'null', // مثبّت: لا Reverb على الاستضافة المشتركة — نمنع فشل البثّ اللحظي
 
     'connections' => [
 
