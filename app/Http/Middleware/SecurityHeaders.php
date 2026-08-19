@@ -25,8 +25,8 @@ class SecurityHeaders
             "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; "
             . "img-src 'self' data: https:; "
             . "script-src 'self'; "
-            . "style-src 'self' 'unsafe-inline'; "
-            . "font-src 'self' data:; "
+            . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            . "font-src 'self' data: https://fonts.gstatic.com; "
             . "connect-src 'self' https: wss:; "
             . "form-action 'self'"
         );

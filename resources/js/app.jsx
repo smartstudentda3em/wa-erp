@@ -8,7 +8,11 @@ import TemplatesPage from './pages/TemplatesPage';
 import TestLogPage from './pages/TestLogPage';
 import SettingsAccountsPage from './pages/SettingsAccountsPage';
 import SettingsTeamPage from './pages/SettingsTeamPage';
+import { useThemeStore } from './stores/themeStore';
 import '../css/app.css';
+
+// تطبيق الثيم قبل أول رسم لتفادي الوميض
+useThemeStore.getState().init();
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
