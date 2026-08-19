@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\BroadcastCampaign;
+use App\Policies\CampaignPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // اسم السياسة (CampaignPolicy) لا يطابق اسم الموديل (BroadcastCampaign)،
+        // فلا يكتشفها Laravel تلقائياً — نربطها يدوياً.
+        Gate::policy(BroadcastCampaign::class, CampaignPolicy::class);
     }
 }
