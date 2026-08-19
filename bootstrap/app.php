@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\VerifyWhatsAppSignature;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Sanctum SPA: جعل طلبات الـ API stateful
         $middleware->statefulApi();
+
+        // رؤوس أمان على كل استجابة
+        $middleware->append(SecurityHeaders::class);
 
         // alias ميدل وير التحقق من توقيع واتساب
         $middleware->alias([

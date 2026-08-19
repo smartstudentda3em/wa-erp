@@ -97,7 +97,8 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
-    'key' => env('APP_KEY') ?: 'base64:Q4h3qQreSUqNfOAoNWGGBPyV0LMNIMDRZXQSwHt0zJY=', // مفتاح احتياطي إن كان .env فارغاً
+    // يُفضَّل ضبط APP_KEY في .env على الخادم وحذف الاحتياطي هنا. المفتاح القديم سُرّب (مستودع عام) فدُوّر.
+    'key' => env('APP_KEY') ?: 'base64:28P3PkLRvaeUTf44Eu7U9PgykSSDhvrsXrBfILRVFqo=',
 
     'previous_keys' => [
         ...array_filter(

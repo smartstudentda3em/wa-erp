@@ -1,3 +1,33 @@
+# =====================================================================
+#  حماية: حجب الملفات الحسّاسة (لأن الموقع يُخدَم من جذر المشروع مؤقتاً).
+#  الحل الجذري الموصى به: اضبط Document Root في hPanel على مجلد public.
+# =====================================================================
+
+# ملفات النظام الحسّاسة بالاسم (.env / composer / artisan / إعدادات Docker ...)
+<FilesMatch "(?i)^(\.env.*|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|Dockerfile|docker-compose\.yml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# أي سجلات أو قواعد بيانات أو نسخ احتياطية (يشمل database.sqlite و *.log)
+<FilesMatch "(?i)\.(log|sqlite|sqlite3|db|sql|bak)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# =====================================================================
+#  توجيه باقي الطلبات إلى مجلد public (front controller)
+# =====================================================================
 <IfModule mod_rewrite.c>
     RewriteEngine on
     RewriteCond %{REQUEST_URI} !^/public/
