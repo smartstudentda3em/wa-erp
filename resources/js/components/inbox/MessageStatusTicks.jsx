@@ -1,36 +1,22 @@
-// علامات التوثيق الملوّنة: pending 🕐 | sent ✓ | delivered ✓✓ | read ✓✓ أزرق | failed ✗
-export default function MessageStatusTicks({ status }) {
-  if (status === 'pending') {
-    return <ClockIcon className="w-3.5 h-3.5 text-gray-400" />;
-  }
+import { Check, CheckCheck, Clock, AlertCircle } from 'lucide-react';
+
+// علامات التوثيق: pending 🕐 | sent ✓ | delivered/read ✓✓ (read بلون مميّز) | failed ✗
+// onLight=true عندما تكون داخل فقاعة متدرّجة بنص أبيض
+export default function MessageStatusTicks({ status, onLight = false }) {
+  const base = onLight ? 'text-white/70' : 'text-muted';
+
+  if (status === 'pending') return <Clock size={13} className={base} />;
   if (status === 'failed') {
-    return <span className="text-red-500 text-[11px]">✗ فشل</span>;
+    return (
+      <span className={`inline-flex items-center gap-0.5 text-[11px] ${onLight ? 'text-rose-200' : 'text-rose-500'}`}>
+        <AlertCircle size={13} /> فشل
+      </span>
+    );
   }
 
-  const isRead = status === 'read';
-  const single = status === 'sent';
+  const read = status === 'read';
+  const readCls = onLight ? 'text-sky-200' : 'text-sky-500';
 
-  return (
-    <span className={`inline-flex items-center ${isRead ? 'text-sky-500' : 'text-gray-400'}`}>
-      <CheckIcon className="w-3.5 h-3.5" />
-      {!single && <CheckIcon className="w-3.5 h-3.5 -mr-2" />}
-    </span>
-  );
-}
-
-function CheckIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ClockIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  if (status === 'sent') return <Check size={14} className={base} />;
+  return <CheckCheck size={14} className={read ? readCls : base} />;
 }

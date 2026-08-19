@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Plus, RefreshCw, Pencil, MessageCircle } from 'lucide-react';
 import { useAccountStore } from '../stores/accountStore';
 import { useTeamStore } from '../stores/teamStore';
 import { useCan } from '../hooks/useCan';
+import Modal from '../components/ui/Modal';
 import AccountForm from '../components/settings/AccountForm';
 
 // صفحة إعدادات حسابات واتساب — admin فقط (accounts.manage)
@@ -18,87 +20,71 @@ export default function SettingsAccountsPage() {
   useEffect(() => { loadAccounts(); loadDepartments(); }, []);
 
   const onSync = async (id) => {
-    setSyncingId(id);
-    setNotice(null);
-    try {
-      const msg = await syncTemplates(id);
-      setNotice(msg ?? 'بدأت المزامنة.');
-    } catch {
-      setNotice('تعذّرت المزامنة.');
-    } finally {
-      setSyncingId(null);
-    }
+    setSyncingId(id); setNotice(null);
+    try { setNotice(await syncTemplates(id) ?? 'بدأت المزامنة.'); }
+    catch { setNotice('تعذّرت المزامنة.'); }
+    finally { setSyncingId(null); }
   };
 
   if (!can('accounts.manage')) {
-    return <div className="p-6 text-center text-gray-400">لا تملك صلاحية إدارة الحسابات.</div>;
+    return <div className="p-8 text-center text-muted">لا تملك صلاحية إدارة الحسابات.</div>;
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto" dir="rtl">
-      <div className="flex justify-between items-center mb-5">
-        <h1 className="text-xl font-bold">حسابات واتساب</h1>
-        <button
-          onClick={() => setEditing('new')}
-          className="bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-600"
-        >
-          + إضافة حساب
-        </button>
+    <div className="h-full overflow-y-auto">
+      <div className="p-6 md:p-8 max-w-4xl mx-auto" dir="rtl">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-content">حسابات واتساب</h1>
+          <button onClick={() => setEditing('new')} className="btn-primary btn-sm"><Plus size={16} /> إضافة حساب</button>
+        </div>
+
+        {notice && <div className="mb-4 rounded-xl bg-sky-500/10 text-sky-500 text-sm p-3">{notice}</div>}
+
+        <div className="card divide-y divide-line overflow-hidden">
+          {loading && <p className="p-6 text-center text-muted text-sm">جارِ التحميل...</p>}
+          {accounts.map((a) => (
+            <div key={a.id} className="p-4 flex justify-between items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="grid place-items-center w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0"><MessageCircle size={20} /></div>
+                <div className="min-w-0">
+                  <div className="font-semibold text-content flex items-center gap-2 flex-wrap">
+                    {a.label}
+                    <span className={`badge ${a.is_active ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-400'}`}>
+                      {a.is_active ? 'مفعّل' : 'معطّل'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted mt-0.5">
+                    <span dir="ltr">{a.display_phone_number}</span> · نشاط: {deptName(a.department_id) ?? 'غير محدد'}
+                    {a.daily_limit ? ` · حد يومي: ${a.daily_limit}` : ''}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button onClick={() => onSync(a.id)} disabled={syncingId === a.id} className="btn-icon" title="مزامنة القوالب">
+                  <RefreshCw size={17} className={syncingId === a.id ? 'animate-spin' : ''} />
+                </button>
+                <button onClick={() => setEditing(a)} className="btn-icon" title="تعديل"><Pencil size={16} /></button>
+              </div>
+            </div>
+          ))}
+          {!loading && accounts.length === 0 && (
+            <p className="p-8 text-center text-muted text-sm">لا توجد حسابات — أضف حسابك الأول.</p>
+          )}
+        </div>
       </div>
 
-      {notice && (
-        <div className="mb-4 bg-sky-50 text-sky-700 text-sm rounded-lg p-3">{notice}</div>
-      )}
-
-      {editing && (
-        <div className="mb-6">
+      <Modal open={!!editing} onClose={() => setEditing(null)} size="lg" icon={<MessageCircle size={20} />}
+        title={editing && editing !== 'new' ? 'تعديل حساب' : 'إضافة حساب واتساب'}
+        subtitle="بيانات الربط مع Meta Cloud API">
+        {editing && (
           <AccountForm
             account={editing === 'new' ? null : editing}
             departments={departments}
             onSaved={() => { setEditing(null); loadAccounts(); }}
             onCancel={() => setEditing(null)}
           />
-        </div>
-      )}
-
-      <div className="bg-white rounded-2xl shadow divide-y">
-        {loading && <p className="p-4 text-center text-gray-400 text-sm">جارِ التحميل...</p>}
-        {accounts.map((a) => (
-          <div key={a.id} className="p-4 flex justify-between items-center">
-            <div>
-              <div className="font-medium flex items-center gap-2">
-                {a.label}
-                <span className={`text-[11px] rounded-full px-2 py-0.5 ${a.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {a.is_active ? 'مفعّل' : 'معطّل'}
-                </span>
-              </div>
-              <div className="text-xs text-gray-400 mt-0.5">
-                {a.display_phone_number} · ID: {a.phone_number_id}
-                {a.daily_limit ? ` · حد يومي: ${a.daily_limit}` : ''}
-                {` · نشاط: ${deptName(a.department_id) ?? 'غير محدد'}`}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => onSync(a.id)}
-                disabled={syncingId === a.id}
-                className="text-sm text-green-600 hover:underline disabled:opacity-50"
-              >
-                {syncingId === a.id ? 'جارِ المزامنة...' : 'مزامنة القوالب'}
-              </button>
-              <button
-                onClick={() => setEditing(a)}
-                className="text-sm text-sky-600 hover:underline"
-              >
-                تعديل
-              </button>
-            </div>
-          </div>
-        ))}
-        {!loading && accounts.length === 0 && (
-          <p className="p-4 text-center text-gray-400 text-sm">لا توجد حسابات — أضف حسابك الأول.</p>
         )}
-      </div>
+      </Modal>
     </div>
   );
 }

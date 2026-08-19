@@ -1,41 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeftRight } from 'lucide-react';
 import { useInboxStore } from '../../stores/inboxStore';
+import Avatar from '../ui/Avatar';
 
-// زر تحويل المحادثة لموظف آخر — يُعرض فقط لمن يملك صلاحية conversations.assign
+// زر تحويل المحادثة لموظف آخر — لمن يملك صلاحية conversations.assign
 export default function TransferControl() {
   const { agents, loadAgents, assignConversation } = useInboxStore();
   const [open, setOpen] = useState(false);
+  const ref = useRef(null);
 
+  useEffect(() => { if (open && agents.length === 0) loadAgents(); }, [open]);
   useEffect(() => {
-    if (open && agents.length === 0) loadAgents();
-  }, [open]);
+    const h = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
 
-  const transfer = async (userId) => {
-    await assignConversation(userId);
-    setOpen(false);
-  };
+  const transfer = async (userId) => { await assignConversation(userId); setOpen(false); };
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="text-xs text-gray-600 border rounded-lg px-3 py-1 hover:bg-gray-50"
-      >
-        تحويل ▾
+    <div className="relative" ref={ref}>
+      <button onClick={() => setOpen((v) => !v)} className="btn-outline btn-sm" title="تحويل لموظف آخر">
+        <ArrowLeftRight size={15} /> تحويل
       </button>
 
       {open && (
-        <div className="absolute left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-          {agents.length === 0 && (
-            <p className="p-2 text-xs text-gray-400">جارِ التحميل...</p>
-          )}
+        <div className="absolute end-0 mt-2 w-56 card shadow-pop p-1.5 z-20 max-h-64 overflow-y-auto animate-scale-in">
+          {agents.length === 0 && <p className="p-3 text-xs text-muted text-center">جارِ التحميل...</p>}
           {agents.map((a) => (
-            <button
-              key={a.id}
-              onClick={() => transfer(a.id)}
-              className="w-full text-right px-3 py-2 text-sm hover:bg-green-50"
-            >
-              {a.name}
+            <button key={a.id} onClick={() => transfer(a.id)}
+              className="w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-start hover:bg-surface-2 transition">
+              <Avatar name={a.name} size="sm" />
+              <span className="truncate text-content">{a.name}</span>
             </button>
           ))}
         </div>

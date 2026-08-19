@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { RefreshCw, Search, Eye } from 'lucide-react';
 import api from '../lib/axios';
 import { useTemplateStore } from '../stores/templateStore';
 import { useRealtimeTemplates } from '../hooks/useRealtimeTemplates';
@@ -6,18 +7,12 @@ import { useCan } from '../hooks/useCan';
 import TemplatePreview from '../components/templates/TemplatePreview';
 
 const STATUS = {
-  approved: { label: 'معتمد', cls: 'bg-green-100 text-green-700' },
-  pending:  { label: 'قيد المراجعة', cls: 'bg-amber-100 text-amber-700' },
-  rejected: { label: 'مرفوض', cls: 'bg-red-100 text-red-700' },
+  approved: { label: 'معتمد', cls: 'bg-emerald-500/10 text-emerald-500' },
+  pending:  { label: 'قيد المراجعة', cls: 'bg-amber-500/10 text-amber-500' },
+  rejected: { label: 'مرفوض', cls: 'bg-rose-500/10 text-rose-500' },
 };
+const CATEGORY = { marketing: 'تسويقي', utility: 'خدمي', authentication: 'مصادقة' };
 
-const CATEGORY = {
-  marketing: 'تسويقي',
-  utility: 'خدمي',
-  authentication: 'مصادقة',
-};
-
-// صفحة عرض القوالب لكل حساب مع حالاتها الملوّنة — تتحدّث لحظياً عبر Reverb
 export default function TemplatesPage() {
   const can = useCan();
   const load = useTemplateStore((s) => s.load);
@@ -34,7 +29,6 @@ export default function TemplatesPage() {
   const allTemplates = useTemplateStore((s) => s.get(accountId, false));
   useRealtimeTemplates(accountId);
 
-  // فلترة بالاسم والحالة (على العميل)
   const templates = allTemplates.filter((t) => {
     const byStatus = statusFilter === 'all' || t.status === statusFilter;
     const byName = !search.trim() || t.name.toLowerCase().includes(search.trim().toLowerCase());
@@ -43,136 +37,105 @@ export default function TemplatesPage() {
 
   useEffect(() => {
     api.get('/whatsapp-accounts').then(({ data }) => {
-      setAccounts(data.data);
-      setAccountId(data.data?.[0]?.id ?? null);
+      setAccounts(data.data); setAccountId(data.data?.[0]?.id ?? null);
     });
   }, []);
-
-  useEffect(() => {
-    if (accountId) load(accountId);
-  }, [accountId]);
+  useEffect(() => { if (accountId) load(accountId); }, [accountId]);
 
   const sync = async () => {
-    setSyncing(true);
-    setNotice(null);
+    setSyncing(true); setNotice(null);
     try {
       const { data } = await api.post(`/settings/whatsapp-accounts/${accountId}/sync-templates`);
       setNotice(data.message ?? 'بدأت المزامنة.');
-    } catch {
-      setNotice('تعذّرت المزامنة.');
-    } finally {
-      setSyncing(false);
-    }
+    } catch { setNotice('تعذّرت المزامنة.'); } finally { setSyncing(false); }
   };
 
-  // الأعداد من القائمة الكاملة (لا المفلترة)
-  const counts = allTemplates.reduce((acc, t) => {
-    acc[t.status] = (acc[t.status] ?? 0) + 1;
-    return acc;
-  }, {});
+  const counts = allTemplates.reduce((acc, t) => { acc[t.status] = (acc[t.status] ?? 0) + 1; return acc; }, {});
 
   return (
-    <div className="p-6 max-w-4xl mx-auto" dir="rtl">
-      <div className="flex justify-between items-center mb-5">
-        <h1 className="text-xl font-bold">القوالب</h1>
-        <div className="flex items-center gap-3">
-          <select
-            value={accountId ?? ''}
-            onChange={(e) => setAccountId(Number(e.target.value) || null)}
-            className="rounded-lg border px-3 py-2 text-sm"
-          >
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>{a.label}</option>
-            ))}
-          </select>
-          {can('accounts.manage') && (
-            <button
-              onClick={sync}
-              disabled={syncing || !accountId}
-              className="bg-green-500 text-white rounded-lg px-4 py-2 text-sm hover:bg-green-600 disabled:opacity-50"
-            >
-              {syncing ? 'جارِ المزامنة...' : 'مزامنة من Meta'}
-            </button>
-          )}
+    <div className="h-full overflow-y-auto">
+      <div className="p-6 md:p-8 max-w-5xl mx-auto" dir="rtl">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
+          <h1 className="text-2xl font-bold text-content">القوالب</h1>
+          <div className="flex items-center gap-3">
+            <select value={accountId ?? ''} onChange={(e) => setAccountId(Number(e.target.value) || null)}
+              className="input !w-auto !py-2">
+              {accounts.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
+            </select>
+            {can('accounts.manage') && (
+              <button onClick={sync} disabled={syncing || !accountId} className="btn-primary btn-sm">
+                <RefreshCw size={15} className={syncing ? 'animate-spin' : ''} />
+                {syncing ? 'جارِ المزامنة...' : 'مزامنة من Meta'}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {notice && <div className="mb-4 bg-sky-50 text-sky-700 text-sm rounded-lg p-3">{notice}</div>}
+        {notice && <div className="mb-4 rounded-xl bg-sky-500/10 text-sky-500 text-sm p-3">{notice}</div>}
 
-      {/* ملخّص الحالات (قابل للنقر للفلترة) */}
-      <div className="flex flex-wrap gap-3 mb-4 text-sm">
-        <Summary label="الكل" value={allTemplates.length} cls="text-gray-700"
-                 active={statusFilter === 'all'} onClick={() => setStatusFilter('all')} />
-        <Summary label="معتمد" value={counts.approved ?? 0} cls="text-green-700"
-                 active={statusFilter === 'approved'} onClick={() => setStatusFilter('approved')} />
-        <Summary label="قيد المراجعة" value={counts.pending ?? 0} cls="text-amber-700"
-                 active={statusFilter === 'pending'} onClick={() => setStatusFilter('pending')} />
-        <Summary label="مرفوض" value={counts.rejected ?? 0} cls="text-red-700"
-                 active={statusFilter === 'rejected'} onClick={() => setStatusFilter('rejected')} />
-      </div>
+        {/* ملخّص الحالات */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <Summary label="الكل" value={allTemplates.length} active={statusFilter === 'all'} onClick={() => setStatusFilter('all')} tint="text-content" />
+          <Summary label="معتمد" value={counts.approved ?? 0} active={statusFilter === 'approved'} onClick={() => setStatusFilter('approved')} tint="text-emerald-500" />
+          <Summary label="قيد المراجعة" value={counts.pending ?? 0} active={statusFilter === 'pending'} onClick={() => setStatusFilter('pending')} tint="text-amber-500" />
+          <Summary label="مرفوض" value={counts.rejected ?? 0} active={statusFilter === 'rejected'} onClick={() => setStatusFilter('rejected')} tint="text-rose-500" />
+        </div>
 
-      {/* بحث بالاسم */}
-      <div className="mb-4">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="بحث باسم القالب..."
-          className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-        />
-      </div>
+        {/* بحث */}
+        <div className="relative mb-4 max-w-sm">
+          <Search size={16} className="absolute top-1/2 -translate-y-1/2 start-3 text-muted pointer-events-none" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث باسم القالب..."
+            className="input ps-9" />
+        </div>
 
-      <div className="bg-white rounded-2xl shadow overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs">
-            <tr>
-              <th className="text-right p-3">الاسم</th>
-              <th className="text-right p-3">اللغة</th>
-              <th className="text-right p-3">التصنيف</th>
-              <th className="text-right p-3">الحالة</th>
-              <th className="text-right p-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading && (
-              <tr><td colSpan={5} className="p-4 text-center text-gray-400">جارِ التحميل...</td></tr>
-            )}
-            {!loading && templates.length === 0 && (
-              <tr><td colSpan={5} className="p-4 text-center text-gray-400">
-                {allTemplates.length === 0 ? 'لا توجد قوالب — جرّب المزامنة من Meta.' : 'لا نتائج مطابقة للبحث/الفلتر.'}
-              </td></tr>
-            )}
-            {templates.map((t) => {
-              const s = STATUS[t.status] ?? { label: t.status, cls: 'bg-gray-100 text-gray-600' };
-              return (
-                <tr key={t.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setPreview(t)}>
-                  <td className="p-3 font-medium">{t.name}</td>
-                  <td className="p-3 text-gray-500">{t.language}</td>
-                  <td className="p-3 text-gray-500">{CATEGORY[t.category] ?? t.category ?? '—'}</td>
-                  <td className="p-3">
-                    <span className={`text-xs rounded-full px-3 py-1 ${s.cls}`}>{s.label}</span>
-                  </td>
-                  <td className="p-3 text-sky-600 text-xs">معاينة</td>
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-surface-2/60 text-muted text-xs">
+                <tr>
+                  <th className="text-start p-3 font-semibold">الاسم</th>
+                  <th className="text-start p-3 font-semibold">اللغة</th>
+                  <th className="text-start p-3 font-semibold">التصنيف</th>
+                  <th className="text-start p-3 font-semibold">الحالة</th>
+                  <th className="p-3"></th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {loading && <tr><td colSpan={5} className="p-6 text-center text-muted">جارِ التحميل...</td></tr>}
+                {!loading && templates.length === 0 && (
+                  <tr><td colSpan={5} className="p-6 text-center text-muted">
+                    {allTemplates.length === 0 ? 'لا توجد قوالب — جرّب المزامنة من Meta.' : 'لا نتائج مطابقة.'}
+                  </td></tr>
+                )}
+                {templates.map((t) => {
+                  const s = STATUS[t.status] ?? { label: t.status, cls: 'bg-slate-500/10 text-slate-400' };
+                  return (
+                    <tr key={t.id} className="hover:bg-surface-2/50 cursor-pointer transition" onClick={() => setPreview(t)}>
+                      <td className="p-3 font-medium text-content">{t.name}</td>
+                      <td className="p-3 text-muted" dir="ltr">{t.language}</td>
+                      <td className="p-3 text-muted">{CATEGORY[t.category] ?? t.category ?? '—'}</td>
+                      <td className="p-3"><span className={`badge ${s.cls}`}>{s.label}</span></td>
+                      <td className="p-3 text-brand"><Eye size={16} /></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-      <TemplatePreview template={preview} onClose={() => setPreview(null)} />
+        <TemplatePreview template={preview} onClose={() => setPreview(null)} />
+      </div>
     </div>
   );
 }
 
-function Summary({ label, value, cls, active, onClick }) {
+function Summary({ label, value, tint, active, onClick }) {
   return (
-    <button
-      onClick={onClick}
-      className={`rounded-xl shadow px-4 py-2 flex items-center gap-2 transition
-        ${active ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white hover:bg-gray-50'}`}
-    >
-      <span className={`text-lg font-bold ${cls}`}>{value}</span>
-      <span className="text-gray-500 text-xs">{label}</span>
+    <button onClick={onClick}
+      className={`card p-3 flex items-center gap-2.5 transition ${active ? 'ring-2 ring-brand/40' : 'card-hover'}`}>
+      <span className={`text-xl font-bold ${tint}`}>{value}</span>
+      <span className="text-muted text-xs">{label}</span>
     </button>
   );
 }
