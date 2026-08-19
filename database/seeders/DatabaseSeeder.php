@@ -12,13 +12,15 @@ class DatabaseSeeder extends Seeder
      * الترتيب مهم:
      *   1) RoleSeeder            → الأدوار والصلاحيات (يجب أن تسبق إسناد الأدوار)
      *   2) UserSeeder            → المستخدم الأساسي (99970766) + دور admin
-     *   3) WhatsappAccountSeeder → حساب واتساب الافتراضي
+     *   3) DepartmentSeeder      → الأنشطة/الأقسام (تكييف/قرطاسية/مطبعة)
+     *   4) WhatsappAccountSeeder → حساب واتساب الافتراضي
      */
     public function run(): void
     {
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
+            DepartmentSeeder::class,
             WhatsappAccountSeeder::class,
         ]);
     }

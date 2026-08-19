@@ -42,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get ('/me',     [AuthController::class, 'me']);
 
+    // حالة تواجد الموظف (متاح/بالخارج/غير متصل) — تؤثر على توزيع الرسائل الواردة
+    Route::patch('/me/availability', [UserController::class, 'setAvailability']);
+
     // ===== المحادثات (Inbox) =====
     Route::get   ('/conversations',                        [ConversationController::class, 'index']);
     Route::get   ('/conversations/{conversation}',         [ConversationController::class, 'show']);

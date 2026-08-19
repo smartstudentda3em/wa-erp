@@ -13,6 +13,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'password', 'phone', 'avatar_url', 'is_active', 'last_seen_at',
+        'department_id', 'availability', 'last_routed_at',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -20,14 +21,21 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'password'     => 'hashed',
-            'is_active'    => 'boolean',
-            'last_seen_at' => 'datetime',
+            'password'       => 'hashed',
+            'is_active'      => 'boolean',
+            'last_seen_at'   => 'datetime',
+            'last_routed_at' => 'datetime',
         ];
     }
 
     public function assignedConversations()
     {
         return $this->hasMany(Conversation::class, 'assigned_to');
+    }
+
+    /** القسم/النشاط الذي ينتمي إليه الموظف */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 }

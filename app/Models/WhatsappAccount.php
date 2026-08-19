@@ -9,6 +9,7 @@ class WhatsappAccount extends Model
     protected $fillable = [
         'label', 'display_phone_number', 'phone_number_id', 'waba_id',
         'access_token', 'webhook_verify_token', 'daily_limit', 'messaging_tier', 'is_active',
+        'department_id',
     ];
 
     protected function casts(): array
@@ -25,6 +26,12 @@ class WhatsappAccount extends Model
     public function conversations()
     {
         return $this->hasMany(Conversation::class);
+    }
+
+    /** النشاط/القسم الذي يخدمه هذا الرقم (توجيه حسب المصدر) */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function templates()

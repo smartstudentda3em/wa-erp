@@ -132,6 +132,13 @@ class ProcessWhatsAppWebhook implements ShouldQueue
         // 4) استخراج المحتوى
         [$type, $body, $media] = $this->extractContent($msg);
 
+        // 4.b) التوزيع التلقائي (سيلز مسؤول / نشاط / round-robin)
+        //      يُنفَّذ للمحادثات الجديدة أو التي ما زالت بلا تعيين فقط.
+        if ($conversation->wasRecentlyCreated || is_null($conversation->assigned_to)) {
+            app(\App\Services\ConversationRouter::class)->route($conversation, $body);
+            $conversation->refresh();
+        }
+
         // 5) حفظ الرسالة
         $message = $conversation->messages()->create([
             'wa_message_id' => $msg['id'],

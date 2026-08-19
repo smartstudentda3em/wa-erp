@@ -24,6 +24,13 @@ class ConversationController extends Controller
             })
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->boolean('mine'), fn ($q) => $q->where('assigned_to', $user->id))
+            // غير المُسنَدة فقط (لمشرفي الـ Master Inbox لالتقاط ما لم يُوجَّه)
+            ->when($request->boolean('unassigned'), fn ($q) => $q->whereNull('assigned_to'))
+            // تصفية حسب النشاط/القسم (عبر رقم واتساب المستقبِل)
+            ->when($request->filled('department_id'), fn ($q) => $q->whereHas(
+                'whatsappAccount',
+                fn ($a) => $a->where('department_id', $request->integer('department_id'))
+            ))
             ->when($request->search, function ($q, $s) {
                 $q->whereHas('customer', fn ($c) =>
                     $c->where('name', 'like', "%$s%")->orWhere('phone', 'like', "%$s%"));
