@@ -23,5 +23,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // تشخيص مؤقت: اكتب تفاصيل أي استثناء في ملف قابل للقراءة عبر الويب.
+        $exceptions->report(function (\Throwable $e) {
+            @file_put_contents(
+                public_path('_err.log'),
+                now()->toDateTimeString() . ' | ' . get_class($e) . ': ' . $e->getMessage()
+                . ' @ ' . $e->getFile() . ':' . $e->getLine() . "\n"
+                . $e->getTraceAsString() . "\n\n",
+                FILE_APPEND
+            );
+        });
     })->create();
