@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import api from '../lib/axios';
 
+// مرجع ثابت لقائمة فارغة — يمنع حلقة إعادة العرض اللانهائية في مُنتقيات Zustand
+const EMPTY = [];
+
 // متجر موحّد للقوالب مفهرس حسب الحساب — مصدر الحقيقة للمُنتقي والحملة وصفحة القوالب
 export const useTemplateStore = create((set, get) => ({
   byAccount: {},   // { [accountId]: Template[] }  (كل الحالات)
@@ -21,7 +24,7 @@ export const useTemplateStore = create((set, get) => ({
 
   // قراءة قوالب حساب (اختياريّاً المعتمدة فقط)
   get: (accountId, approvedOnly = false) => {
-    const list = get().byAccount[accountId] ?? [];
+    const list = get().byAccount[accountId] ?? EMPTY;
     return approvedOnly ? list.filter((t) => t.status === 'approved') : list;
   },
 

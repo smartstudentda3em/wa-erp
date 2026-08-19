@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import api from '../../lib/axios';
 import { useInboxStore } from '../../stores/inboxStore';
 import { useTemplateStore } from '../../stores/templateStore';
@@ -13,7 +13,12 @@ export default function TemplatePicker() {
   const accountId = conv?.account?.id;
 
   const load = useTemplateStore((s) => s.load);
-  const templates = useTemplateStore((s) => s.get(accountId, true)); // المعتمدة فقط
+  // نختار القائمة الخام (مرجع ثابت) ونفلتر عبر useMemo — تفادياً لحلقة إعادة العرض
+  const rawTemplates = useTemplateStore((s) => s.byAccount[accountId]);
+  const templates = useMemo(
+    () => (rawTemplates ?? []).filter((t) => t.status === 'approved'), // المعتمدة فقط
+    [rawTemplates]
+  );
   const [sending, setSending] = useState(false);
   const [preview, setPreview] = useState(null);
 
