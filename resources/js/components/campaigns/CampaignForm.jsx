@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCampaignStore } from '../../stores/campaignStore';
 import { useTemplateStore } from '../../stores/templateStore';
 import { useRealtimeTemplates } from '../../hooks/useRealtimeTemplates';
@@ -35,8 +35,12 @@ export default function CampaignForm({ onCreated }) {
   const [testMedia, setTestMedia] = useState('');
   const [testing, setTesting] = useState(false);
 
-  // القوالب المعتمدة للحساب المحدّد — من المتجر الموحّد (تتحدّث لحظياً)
-  const templates = useTemplateStore((s) => s.get(form.whatsapp_account_id, true));
+  // القوالب المعتمدة للحساب المحدّد — نختار القائمة الخام ونفلتر عبر useMemo (تفادي حلقة العرض)
+  const rawTemplates = useTemplateStore((s) => s.byAccount[form.whatsapp_account_id]);
+  const templates = useMemo(
+    () => (rawTemplates ?? []).filter((t) => t.status === 'approved'),
+    [rawTemplates]
+  );
   useRealtimeTemplates(form.whatsapp_account_id);
 
   useEffect(() => { loadAccounts(); loadTestMessages(); }, []);
