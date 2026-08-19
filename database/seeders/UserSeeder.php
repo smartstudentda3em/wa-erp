@@ -29,9 +29,10 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // ضمان دور المدير (يتطلب تشغيل RoleSeeder قبله)
+        // ضمان دور المدير
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         if (! $user->hasRole('admin')) {
-            $user->assignRole('admin');
+            $user->assignRole($role);
         }
     }
 }

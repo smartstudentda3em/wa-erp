@@ -10,6 +10,9 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
+        // مسح التخزين المؤقت للصلاحيات
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         // ===== الصلاحيات =====
         $all = [
             'conversations.view_all',   // رؤية كل المحادثات (لا المسندة فقط)
