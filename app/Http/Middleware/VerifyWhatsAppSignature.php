@@ -14,9 +14,16 @@ class VerifyWhatsAppSignature
 {
     public function handle(Request $request, Closure $next)
     {
+        $secret = config('services.whatsapp.app_secret');
+
+        // وضع التطوير: إن لم يُضبط App Secret، نتخطّى التحقق لتمرير الرسائل الواردة.
+        // للإنتاج: اضبط WHATSAPP_APP_SECRET لتفعيل التحقق من التوقيع.
+        if (empty($secret)) {
+            return $next($request);
+        }
+
         $signature = $request->header('X-Hub-Signature-256');
         $payload   = $request->getContent();
-        $secret    = config('services.whatsapp.app_secret');
 
         $expected = 'sha256=' . hash_hmac('sha256', $payload, (string) $secret);
 
