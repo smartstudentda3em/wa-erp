@@ -36,22 +36,11 @@ class WhatsAppWebhookController extends Controller
      */
     public function handle(Request $request)
     {
-        // تشخيص مؤقت: سجّل كل حمولة واردة + أي خطأ معالجة في ملف قابل للقراءة عبر الويب.
-        @file_put_contents(
-            public_path('_in.log'),
-            now()->toDateTimeString() . ' | IN | ' . json_encode($request->all(), JSON_UNESCAPED_UNICODE) . "\n",
-            FILE_APPEND
-        );
-
+        // نردّ 200 دائماً؛ ونحمي الرد من فشل المعالجة (تُسجَّل الأخطاء في سجل الخادم).
         try {
             ProcessWhatsAppWebhook::dispatch($request->all());
         } catch (\Throwable $e) {
-            @file_put_contents(
-                public_path('_in.log'),
-                now()->toDateTimeString() . ' | ERROR | ' . $e->getMessage()
-                . ' @ ' . $e->getFile() . ':' . $e->getLine() . "\n",
-                FILE_APPEND
-            );
+            Log::error('WhatsApp webhook processing failed', ['error' => $e->getMessage()]);
         }
 
         return response()->json(['status' => 'received'], 200);
