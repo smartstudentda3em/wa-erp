@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TemplateController;
@@ -66,6 +67,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get   ('/templates',            [TemplateController::class, 'index']);
     Route::get   ('/whatsapp-accounts',    [WhatsappAccountController::class, 'index']);
     Route::get   ('/users',                [UserController::class, 'index']);
+
+    // ===== إدارة الأقسام والفريق (admin) =====
+    Route::get   ('/departments',              [DepartmentController::class, 'index']);
+    Route::post  ('/departments',              [DepartmentController::class, 'store']);
+    Route::put   ('/departments/{department}', [DepartmentController::class, 'update']);
+    Route::post  ('/users',                    [UserController::class, 'store']);
+    Route::put   ('/users/{user}',             [UserController::class, 'update']);
 
     // ===== إعدادات حسابات واتساب (admin فقط) =====
     Route::get   ('/settings/whatsapp-accounts',                    [WhatsappAccountController::class, 'settingsIndex']);

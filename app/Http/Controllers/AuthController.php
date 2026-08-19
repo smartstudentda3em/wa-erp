@@ -42,11 +42,13 @@ class AuthController extends Controller
         $user = $request->user();
 
         return response()->json([
-            'id'          => $user->id,
-            'name'        => $user->name,
-            'phone'       => $user->phone,
-            'roles'       => $user->getRoleNames(),
-            'permissions' => $user->getAllPermissions()->pluck('name'),
+            'id'           => $user->id,
+            'name'         => $user->name,
+            'phone'        => $user->phone,
+            'availability' => $user->availability,
+            'department'   => $user->department?->only(['id', 'name']),
+            'roles'        => $user->getRoleNames(),
+            'permissions'  => $user->getAllPermissions()->pluck('name'),
         ]);
     }
 }

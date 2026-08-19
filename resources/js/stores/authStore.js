@@ -21,5 +21,11 @@ export const useAuthStore = create((set, get) => ({
   // هل ينتمي لدور معيّن؟
   hasRole: (role) => get().user?.roles?.includes(role) ?? false,
 
+  // تحديث حالة تواجد المستخدم الحالي (متاح/بالخارج/غير متصل)
+  setAvailability: async (availability) => {
+    const { data } = await api.patch('/me/availability', { availability });
+    set((s) => ({ user: { ...s.user, availability: data.availability } }));
+  },
+
   reset: () => set({ user: null, loaded: false }),
 }));

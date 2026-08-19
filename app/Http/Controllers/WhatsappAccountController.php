@@ -25,7 +25,7 @@ class WhatsappAccountController extends Controller
 
         $accounts = WhatsappAccount::get([
             'id', 'label', 'display_phone_number', 'phone_number_id',
-            'waba_id', 'daily_limit', 'messaging_tier', 'is_active',
+            'waba_id', 'daily_limit', 'messaging_tier', 'is_active', 'department_id',
         ]);
 
         return response()->json(['data' => $accounts]);
@@ -78,6 +78,7 @@ class WhatsappAccountController extends Controller
             'daily_limit'          => $a->daily_limit,
             'messaging_tier'       => $a->messaging_tier,
             'is_active'            => $a->is_active,
+            'department_id'        => $a->department_id,
         ];
     }
 }

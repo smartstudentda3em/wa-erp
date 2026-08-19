@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useCan } from '../hooks/useCan';
@@ -46,6 +46,42 @@ function TemplateToasts() {
   return null;
 }
 
+// وسوم حالة التواجد
+const AVAIL = {
+  available: { label: 'متاح', dot: 'bg-green-500' },
+  away: { label: 'بالخارج', dot: 'bg-amber-500' },
+  offline: { label: 'غير متصل', dot: 'bg-gray-400' },
+};
+
+// مبدّل حالة التواجد للموظف الحالي — يؤثّر على استقبال الرسائل الجديدة (round-robin)
+function AvailabilityToggle() {
+  const availability = useAuthStore((s) => s.user?.availability) ?? 'available';
+  const setAvailability = useAuthStore((s) => s.setAvailability);
+  const [saving, setSaving] = useState(false);
+  const av = AVAIL[availability] ?? AVAIL.offline;
+
+  const change = async (e) => {
+    setSaving(true);
+    try { await setAvailability(e.target.value); } catch { /* تجاهل */ } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="mt-3 flex items-center gap-2" title="حالتك تؤثّر على استقبال الرسائل الجديدة">
+      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${av.dot}`} />
+      <select
+        value={availability}
+        onChange={change}
+        disabled={saving}
+        className="text-xs border rounded-lg px-2 py-1 bg-white flex-1 focus:outline-none focus:ring-2 focus:ring-green-400 disabled:opacity-50"
+      >
+        <option value="available">متاح</option>
+        <option value="away">بالخارج</option>
+        <option value="offline">غير متصل</option>
+      </select>
+    </div>
+  );
+}
+
 function Sidebar({ user, onLogout }) {
   const can = useCan();
 
@@ -55,6 +91,7 @@ function Sidebar({ user, onLogout }) {
     { to: '/campaigns', label: 'الحملات', icon: '📢', show: true },
     { to: '/templates', label: 'القوالب', icon: '📄', show: true },
     { to: '/test-log', label: 'سجل الاختبارات', icon: '🧪', show: can('campaigns.manage') },
+    { to: '/settings/team', label: 'إدارة الفريق', icon: '👥', show: can('accounts.manage') },
     { to: '/settings/accounts', label: 'إعدادات الحسابات', icon: '⚙️', show: can('accounts.manage') },
   ];
 
@@ -68,6 +105,7 @@ function Sidebar({ user, onLogout }) {
             {user.roles[0]}
           </span>
         )}
+        <AvailabilityToggle />
       </div>
 
       <nav className="flex-1 p-2 space-y-1">

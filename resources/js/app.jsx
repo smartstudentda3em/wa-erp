@@ -7,6 +7,7 @@ import CampaignsPage from './pages/CampaignsPage';
 import TemplatesPage from './pages/TemplatesPage';
 import TestLogPage from './pages/TestLogPage';
 import SettingsAccountsPage from './pages/SettingsAccountsPage';
+import SettingsTeamPage from './pages/SettingsTeamPage';
 import '../css/app.css';
 
 const router = createBrowserRouter([
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
       { path: '/campaigns', element: <CampaignsPage /> },
       { path: '/templates', element: <TemplatesPage /> },
       { path: '/test-log', element: <TestLogPage /> },
+      { path: '/settings/team', element: <SettingsTeamPage /> },
       { path: '/settings/accounts', element: <SettingsAccountsPage /> },
     ],
   },

@@ -10,10 +10,11 @@ const EMPTY = {
   webhook_verify_token: '',
   daily_limit: '',
   is_active: true,
+  department_id: '',
 };
 
 // نموذج إضافة/تعديل حساب واتساب. عند التعديل: اترك التوكن فارغاً للإبقاء عليه.
-export default function AccountForm({ account, onSaved, onCancel }) {
+export default function AccountForm({ account, departments = [], onSaved, onCancel }) {
   const { createAccount, updateAccount } = useAccountStore();
   const isEdit = Boolean(account);
   const [form, setForm] = useState(
@@ -34,6 +35,7 @@ export default function AccountForm({ account, onSaved, onCancel }) {
       const payload = {
         ...form,
         daily_limit: form.daily_limit ? Number(form.daily_limit) : null,
+        department_id: form.department_id ? Number(form.department_id) : null,
       };
       if (isEdit) await updateAccount(account.id, payload);
       else await createAccount(payload);
@@ -70,6 +72,20 @@ export default function AccountForm({ account, onSaved, onCancel }) {
 
       <Field label="Webhook Verify Token" value={form.webhook_verify_token} onChange={set('webhook_verify_token')} />
       <Field label="الحد اليومي (اختياري)" type="number" value={form.daily_limit} onChange={set('daily_limit')} placeholder="1000" />
+
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          النشاط / القسم <span className="text-xs text-gray-400">(الرسائل الواردة لهذا الرقم تُوزَّع على موظفيه)</span>
+        </label>
+        <select
+          value={form.department_id ?? ''}
+          onChange={set('department_id')}
+          className="w-full rounded-lg border px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-green-400"
+        >
+          <option value="">بلا قسم (توزيع على كل المبيعات)</option>
+          {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+      </div>
 
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={form.is_active} onChange={set('is_active')} />

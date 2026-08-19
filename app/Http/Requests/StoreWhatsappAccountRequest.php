@@ -23,6 +23,7 @@ class StoreWhatsappAccountRequest extends FormRequest
             'daily_limit'          => ['nullable', 'integer', 'min:1'],
             'messaging_tier'       => ['nullable', 'string', 'max:32'],
             'is_active'            => ['sometimes', 'boolean'],
+            'department_id'        => ['nullable', 'integer', 'exists:departments,id'],
         ];
     }
 }

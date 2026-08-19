@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useAccountStore } from '../stores/accountStore';
+import { useTeamStore } from '../stores/teamStore';
 import { useCan } from '../hooks/useCan';
 import AccountForm from '../components/settings/AccountForm';
 
 // صفحة إعدادات حسابات واتساب — admin فقط (accounts.manage)
 export default function SettingsAccountsPage() {
   const { accounts, loadAccounts, loading, syncTemplates } = useAccountStore();
+  const { departments, loadDepartments } = useTeamStore();
   const can = useCan();
   const [editing, setEditing] = useState(null); // 'new' | account | null
   const [syncingId, setSyncingId] = useState(null);
   const [notice, setNotice] = useState(null);
 
-  useEffect(() => { loadAccounts(); }, []);
+  const deptName = (id) => departments.find((d) => d.id === id)?.name;
+
+  useEffect(() => { loadAccounts(); loadDepartments(); }, []);
 
   const onSync = async (id) => {
     setSyncingId(id);
@@ -50,6 +54,7 @@ export default function SettingsAccountsPage() {
         <div className="mb-6">
           <AccountForm
             account={editing === 'new' ? null : editing}
+            departments={departments}
             onSaved={() => { setEditing(null); loadAccounts(); }}
             onCancel={() => setEditing(null)}
           />
@@ -70,6 +75,7 @@ export default function SettingsAccountsPage() {
               <div className="text-xs text-gray-400 mt-0.5">
                 {a.display_phone_number} · ID: {a.phone_number_id}
                 {a.daily_limit ? ` · حد يومي: ${a.daily_limit}` : ''}
+                {` · نشاط: ${deptName(a.department_id) ?? 'غير محدد'}`}
               </div>
             </div>
             <div className="flex items-center gap-3">
