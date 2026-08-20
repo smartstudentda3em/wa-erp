@@ -43,4 +43,14 @@ export const useTeamStore = create((set, get) => ({
     await get().loadAll();
     return data.data;
   },
+
+  deleteDepartment: async (id) => {
+    await api.delete(`/departments/${id}`);
+    await get().loadAll();
+  },
+
+  deleteMember: async (id) => {
+    await api.delete(`/users/${id}`);
+    await get().loadAll();
+  },
 }));

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Snowflake, PenTool, Printer, Building2, Users, Wifi, Layers,
-  Plus, Pencil, Hash,
+  Plus, Pencil, Hash, Trash2,
 } from 'lucide-react';
 import { useTeamStore } from '../stores/teamStore';
 import { useCan } from '../hooks/useCan';
@@ -199,7 +199,7 @@ function Skeleton({ rows = 3, grid = false }) {
 
 /* ============================ النماذج ============================ */
 function DepartmentForm({ department, onDone }) {
-  const { saveDepartment } = useTeamStore();
+  const { saveDepartment, deleteDepartment } = useTeamStore();
   const isEdit = Boolean(department);
   const [form, setForm] = useState({
     name: department?.name ?? '', code: department?.code ?? '', is_active: department?.is_active ?? true,
@@ -212,6 +212,12 @@ function DepartmentForm({ department, onDone }) {
     try { await saveDepartment({ ...form, code: form.code || null }, department?.id); onDone(); }
     catch (e) { setError(e.response?.data?.message ?? 'تعذّر الحفظ.'); }
     finally { setSaving(false); }
+  };
+
+  const del = async () => {
+    setError(null); setSaving(true);
+    try { await deleteDepartment(department.id); onDone(); }
+    catch (e) { setError(e.response?.data?.message ?? 'تعذّر الحذف.'); setSaving(false); }
   };
 
   return (
@@ -228,13 +234,13 @@ function DepartmentForm({ department, onDone }) {
         </div>
       </div>
       <Toggle checked={form.is_active} onChange={(v) => setForm((f) => ({ ...f, is_active: v }))} label="القسم مفعّل" />
-      <FormActions saving={saving} onSubmit={submit} onCancel={onDone} />
+      <FormActions saving={saving} onSubmit={submit} onCancel={onDone} onDelete={isEdit ? del : undefined} />
     </div>
   );
 }
 
 function MemberForm({ member, departments, onDone }) {
-  const { saveMember } = useTeamStore();
+  const { saveMember, deleteMember } = useTeamStore();
   const isEdit = Boolean(member);
   const [form, setForm] = useState({
     name: member?.name ?? '', phone: member?.phone ?? '', password: '',
@@ -254,6 +260,12 @@ function MemberForm({ member, departments, onDone }) {
     } catch (e) {
       setError(e.response?.data?.message ?? 'تعذّر الحفظ. تحقّق من الحقول (الهاتف قد يكون مستخدَمًا).');
     } finally { setSaving(false); }
+  };
+
+  const del = async () => {
+    setError(null); setSaving(true);
+    try { await deleteMember(member.id); onDone(); }
+    catch (e) { setError(e.response?.data?.message ?? 'تعذّر الحذف.'); setSaving(false); }
   };
 
   return (
@@ -301,7 +313,7 @@ function MemberForm({ member, departments, onDone }) {
         </div>
       </div>
       <Toggle checked={form.is_active} onChange={(v) => setForm((f) => ({ ...f, is_active: v }))} label="الحساب مفعّل (المعطّل لا يستقبل توزيعًا)" />
-      <FormActions saving={saving} onSubmit={submit} onCancel={onDone} />
+      <FormActions saving={saving} onSubmit={submit} onCancel={onDone} onDelete={isEdit ? del : undefined} />
     </div>
   );
 }
@@ -310,13 +322,25 @@ function FormError({ msg }) {
   return <div className="rounded-xl bg-rose-500/10 text-rose-500 text-sm px-3.5 py-2.5">{msg}</div>;
 }
 
-function FormActions({ saving, onSubmit, onCancel }) {
+function FormActions({ saving, onSubmit, onCancel, onDelete }) {
+  const [confirm, setConfirm] = useState(false);
   return (
-    <div className="flex gap-3 pt-2">
+    <div className="flex gap-3 pt-2 items-center">
       <button onClick={onSubmit} disabled={saving} className="btn-primary flex-1">
         {saving ? 'جارِ الحفظ...' : 'حفظ'}
       </button>
       <button onClick={onCancel} className="btn-outline">إلغاء</button>
+      {onDelete && (confirm ? (
+        <button type="button" onClick={onDelete} disabled={saving}
+          className="btn bg-rose-500 text-white hover:bg-rose-600">
+          تأكيد الحذف
+        </button>
+      ) : (
+        <button type="button" onClick={() => setConfirm(true)} disabled={saving}
+          className="btn-icon text-rose-500 hover:bg-rose-500/10" title="حذف">
+          <Trash2 size={17} />
+        </button>
+      ))}
     </div>
   );
 }

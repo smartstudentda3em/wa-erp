@@ -72,8 +72,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get   ('/departments',              [DepartmentController::class, 'index']);
     Route::post  ('/departments',              [DepartmentController::class, 'store']);
     Route::put   ('/departments/{department}', [DepartmentController::class, 'update']);
+    Route::delete('/departments/{department}', [DepartmentController::class, 'destroy']);
     Route::post  ('/users',                    [UserController::class, 'store']);
     Route::put   ('/users/{user}',             [UserController::class, 'update']);
+    Route::delete('/users/{user}',             [UserController::class, 'destroy']);
 
     // ===== إعدادات حسابات واتساب (admin فقط) =====
     Route::get   ('/settings/whatsapp-accounts',                    [WhatsappAccountController::class, 'settingsIndex']);

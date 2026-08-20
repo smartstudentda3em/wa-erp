@@ -88,6 +88,26 @@ class UserController extends Controller
         return response()->json(['data' => $this->present($user->fresh(['department', 'roles']))]);
     }
 
+    /** حذف موظف (admin) — مع منع حذف الحساب الحالي والتعامل مع الارتباطات */
+    public function destroy(Request $request, User $user)
+    {
+        $this->authorize('accounts.manage');
+
+        if ($user->id === $request->user()->id) {
+            return response()->json(['message' => 'لا يمكنك حذف حسابك الحالي.'], 422);
+        }
+
+        try {
+            $user->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json([
+                'message' => 'تعذّر حذف الموظف لارتباطه ببيانات (رسائل/طلبات). يمكنك تعطيله بدلاً من حذفه.',
+            ], 422);
+        }
+
+        return response()->noContent();
+    }
+
     /** تحديث حالة تواجد الموظف نفسه (متاح/بالخارج/غير متصل) — يؤثر على التوزيع */
     public function setAvailability(Request $request)
     {

@@ -44,6 +44,19 @@ class DepartmentController extends Controller
         return response()->json(['data' => $this->present($department->fresh())]);
     }
 
+    public function destroy(Department $department)
+    {
+        $this->authorize('accounts.manage');
+
+        // فكّ ارتباط الموظفين والأرقام قبل الحذف (department_id بلا قيد أجنبي)
+        \App\Models\User::where('department_id', $department->id)->update(['department_id' => null]);
+        \App\Models\WhatsappAccount::where('department_id', $department->id)->update(['department_id' => null]);
+
+        $department->delete();
+
+        return response()->noContent();
+    }
+
     protected function validateData(Request $request, ?int $ignoreId = null): array
     {
         $data = $request->validate([
