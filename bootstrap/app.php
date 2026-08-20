@@ -34,8 +34,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 && ! $e instanceof \Illuminate\Validation\ValidationException
                 && ! $e instanceof \Illuminate\Auth\AuthenticationException) {
                 return response()->json([
-                    'message' => 'DIAG '.get_class($e).': '.$e->getMessage(),
-                    'at'      => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine(),
+                    'message'    => 'DIAG '.get_class($e).': '.$e->getMessage(),
+                    'at'         => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine(),
+                    'db_default' => config('database.default'),
+                    'cfg_cached' => app()->configurationIsCached(),
+                    'base'       => base_path(),
                 ], 500);
             }
         });
