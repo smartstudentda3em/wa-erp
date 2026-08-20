@@ -27,5 +27,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // [تشخيص مؤقت] كشف رسالة الأخطاء الحقيقية لطلبات API (تُزال بعد الإصلاح)
+        $exceptions->render(function (\Throwable $e, $request) {
+            if ($request->is('api/*')
+                && ! $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                && ! $e instanceof \Illuminate\Validation\ValidationException
+                && ! $e instanceof \Illuminate\Auth\AuthenticationException) {
+                return response()->json([
+                    'message' => 'DIAG '.get_class($e).': '.$e->getMessage(),
+                    'at'      => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine(),
+                ], 500);
+            }
+        });
     })->create();
